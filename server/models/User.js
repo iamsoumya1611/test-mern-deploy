@@ -6,6 +6,8 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Please add a username'],
         unique: true,
+        trim: true,
+        maxlength: [20, 'Username cannot be more than 20 characters']
     },
     email: {
         type: String,
@@ -28,11 +30,19 @@ const userSchema = new mongoose.Schema({
 
 // Encrypt password using bcrypt
 userSchema.pre('save', async function(next) {
+    // Only run this function if password was actually modified
     if (!this.isModified('password')) {
         next();
     }
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
+    
+    try {
+        // Hash password with bcrypt
+        const salt = await bcrypt.genSalt(10);
+        this.password = await bcrypt.hash(this.password, salt);
+        next();
+    } catch (error) {
+        next(error);
+    }
 });
 
 // Match user entered password to hashed password in database
