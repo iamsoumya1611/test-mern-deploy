@@ -16,7 +16,7 @@ app.use(express.json());
 
 // Enable CORS with specific origin
 app.use(cors({
-    origin: 'https://test.soumyadeveloper.site',
+    origin: '*',
     credentials: true
 }));
 
@@ -26,7 +26,7 @@ app.get('/', (req, res) => {
 });
 
 // Routes
-app.use('/api/users', require('./routes/userRoutes'));
+app.use('/users', require('./routes/userRoutes'));
 
 // For cPanel, we need to use the port provided in the environment
 const PORT = process.env.PORT || 3000;
