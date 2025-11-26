@@ -1,0 +1,9 @@
+WordPress has been successfully installed at :
+https://mern.soumyadeveloper.site
+Administrative URL : https://mern.soumyadeveloper.site/wp-admin/
+
+Admin Username : AdminSOUMYA1611
+
+Admin Password : #1%mQI@vSs#1%mQI@vSs#1%mQI@vSs#1%mQI@vSs
+
+Admin Email : admin@mern.soumyadeveloper.site
