@@ -11,6 +11,8 @@ import {
 } from '@mui/material';
 import axios from 'axios';
 
+const baseApi = process.env.REACT_APP_API_URL;
+
 const Register = () => {
     const [formData, setFormData] = useState({
         username: '',
@@ -31,7 +33,7 @@ const Register = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post('http://localhost:5000/api/users/register', formData);
+            const response = await axios.post(`${baseApi}/users/register`, formData);
             login(response.data);
             navigate('/');
         } catch (error) {
