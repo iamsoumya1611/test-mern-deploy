@@ -32,7 +32,7 @@ const Login = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post(`${baseApi}/users/login`, formData);
+            const response = await axios.post(`${baseApi}/api/users/login`, formData);
             login(response.data);
             navigate('/');
         } catch (error) {

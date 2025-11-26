@@ -16,7 +16,7 @@ app.use(express.json());
 
 // Enable CORS with specific origin
 app.use(cors({
-    origin: '*',
+    origin: ['https://test-mern-deploy-zeta.vercel.app', 'http://localhost:3000', 'http://localhost:5000'],
     credentials: true
 }));
 
@@ -26,17 +26,24 @@ app.get('/', (req, res) => {
 });
 
 // Routes
-app.use('/users', require('./routes/userRoutes'));
+app.use('/api/users', require('./routes/userRoutes'));
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({ message: 'Something went wrong!' });
+});
 
 // For cPanel, we need to use the port provided in the environment
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 
-// Log any unhandled errors
+// Handle unhandled promise rejections
 process.on('unhandledRejection', (err) => {
-    console.log('Unhandled Rejection:', err);
+    console.log('Unhandled Rejection:', err.message);
+    process.exit(1);
 });
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
-    console.log('MongoDB URI:', process.env.MONGO_URI); // To verify connection string in logs
+    console.log('MongoDB URI:', process.env.MONGO_URI ? 'Connected' : 'Not found'); // To verify connection string in logs
 });

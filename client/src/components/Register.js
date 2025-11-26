@@ -33,7 +33,7 @@ const Register = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post(`${baseApi}/users/register`, formData);
+            const response = await axios.post(`${baseApi}/api/users/register`, formData);
             login(response.data);
             navigate('/');
         } catch (error) {
