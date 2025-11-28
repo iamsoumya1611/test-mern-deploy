@@ -1,6 +1,8 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
+const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
 const connectDB = require('./config/db');
 
 // Load env vars
@@ -10,6 +12,9 @@ dotenv.config();
 connectDB();
 
 const app = express();
+
+// Add security headers
+app.use(helmet());
 
 // Add request logging
 app.use((req, res, next) => {
@@ -25,11 +30,35 @@ app.use(cors({
     origin: ['https://test-mern-deploy-zeta.vercel.app', 'http://localhost:3000', 'http://localhost:5000'],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization'],
-    credentials: true
+    credentials: true,
+    optionsSuccessStatus: 200 // Some legacy browsers choke on 204
 }));
 
 // Handle preflight requests explicitly
 app.options('*', cors());
+
+// Rate limiting
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // limit each IP to 100 requests per windowMs
+    message: 'Too many requests from this IP, please try again later.',
+    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+    legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
+app.use(limiter);
+
+// Special rate limiting for auth endpoints
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5, // limit each IP to 5 requests per windowMs for auth endpoints
+    message: 'Too many authentication attempts, please try again later.',
+    skipSuccessfulRequests: true,
+    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+    legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
+
+// Apply auth rate limiting to user routes
+app.use('/users', authLimiter);
 
 // Basic route for testing
 app.get('/', (req, res) => {
@@ -42,7 +71,7 @@ app.get('/test-cors', (req, res) => {
 });
 
 // Routes
-app.use('/api/users', require('./routes/userRoutes'));
+app.use('/users', require('./routes/userRoutes'));
 
 // Error handling middleware
 app.use((err, req, res, next) => {

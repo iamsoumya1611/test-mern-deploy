@@ -4,6 +4,7 @@ const User = require('../models/User');
 const protect = async (req, res, next) => {
     let token;
 
+    // Check for token in Authorization header
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
         try {
             // Get token from header
@@ -12,20 +13,30 @@ const protect = async (req, res, next) => {
             // Verify token
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-            // Get user from token
+            // Get user from token (exclude password)
             req.user = await User.findById(decoded.id).select('-password');
+
+            // Check if user exists
+            if (!req.user) {
+                return res.status(401).json({ message: 'Not authorized, user not found' });
+            }
 
             next();
         } catch (error) {
             console.error('Authentication error:', error.message);
-            res.status(401).json({ message: 'Not authorized, token failed' });
-            return;
+            if (error.name === 'JsonWebTokenError') {
+                return res.status(401).json({ message: 'Not authorized, invalid token' });
+            }
+            if (error.name === 'TokenExpiredError') {
+                return res.status(401).json({ message: 'Not authorized, token expired' });
+            }
+            return res.status(401).json({ message: 'Not authorized, token failed' });
         }
     }
 
+    // If no token found
     if (!token) {
-        res.status(401).json({ message: 'Not authorized, no token' });
-        return;
+        return res.status(401).json({ message: 'Not authorized, no token' });
     }
 };
 

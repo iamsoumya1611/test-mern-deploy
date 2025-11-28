@@ -1,15 +1,19 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { AppBar, Toolbar, Typography, Button, Container, Box } from '@mui/material';
+import { AppBar, Toolbar, Typography, Button, Container, Box, CircularProgress } from '@mui/material';
 import Login from './components/Login';
 import Register from './components/Register';
 import Home from './components/Home';
 import { useNavigate } from 'react-router-dom';
 
 const Navigation = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, loading } = useAuth();
   const navigate = useNavigate();
+
+  if (loading) {
+    return null; // Or a loading spinner
+  }
 
   return (
     <AppBar position="static">
@@ -37,7 +41,16 @@ const Navigation = () => {
 };
 
 const PrivateRoute = ({ children }) => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+  
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+  
   return user ? children : <Navigate to="/login" />;
 };
 

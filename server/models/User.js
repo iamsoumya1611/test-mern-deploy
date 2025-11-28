@@ -7,12 +7,18 @@ const userSchema = new mongoose.Schema({
         required: [true, 'Please add a username'],
         unique: true,
         trim: true,
-        maxlength: [20, 'Username cannot be more than 20 characters']
+        minlength: [3, 'Username must be at least 3 characters'],
+        maxlength: [20, 'Username cannot be more than 20 characters'],
+        match: [
+            /^[a-zA-Z0-9_]+$/,
+            'Username can only contain letters, numbers, and underscores'
+        ]
     },
     email: {
         type: String,
         required: [true, 'Please add an email'],
         unique: true,
+        lowercase: true,
         match: [
             /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
             'Please add a valid email'
@@ -32,12 +38,12 @@ const userSchema = new mongoose.Schema({
 userSchema.pre('save', async function(next) {
     // Only run this function if password was actually modified
     if (!this.isModified('password')) {
-        next();
+        return next();
     }
     
     try {
         // Hash password with bcrypt
-        const salt = await bcrypt.genSalt(10);
+        const salt = await bcrypt.genSalt(12); // Increased salt rounds for better security
         this.password = await bcrypt.hash(this.password, salt);
         next();
     } catch (error) {
